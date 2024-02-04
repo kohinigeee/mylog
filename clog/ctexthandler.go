@@ -16,6 +16,8 @@ type customTextHandler struct {
 	levelColorMap  map[slog.Level]colorFunc
 	isKeysColored  bool
 	isLevelColored bool
+	isShow         bool
+	filterLevel    map[slog.Level]bool
 }
 
 func NewCustomTextHandler(w io.Writer, opts ...customHandlerOptionFunc) (*customTextHandler, error) {
@@ -24,6 +26,8 @@ func NewCustomTextHandler(w io.Writer, opts ...customHandlerOptionFunc) (*custom
 		levelColorMap:  defaultColorMap(),
 		isKeysColored:  nil,
 		isLevelColored: nil,
+		isShow:         nil,
+		levelFilter:    make(map[slog.Level]bool),
 	}
 
 	for _, opt := range opts {
@@ -35,6 +39,11 @@ func NewCustomTextHandler(w io.Writer, opts ...customHandlerOptionFunc) (*custom
 
 	if option.handlerOption == nil {
 		option.handlerOption = &slog.HandlerOptions{}
+	}
+
+	if option.isShow == nil {
+		initialShow := true
+		option.isShow = &initialShow
 	}
 
 	if option.isKeysColored == nil {
@@ -51,8 +60,10 @@ func NewCustomTextHandler(w io.Writer, opts ...customHandlerOptionFunc) (*custom
 		Handler:        slog.NewTextHandler(w, option.handlerOption),
 		w:              w,
 		levelColorMap:  option.levelColorMap,
+		isShow:         *option.isShow,
 		isKeysColored:  *option.isKeysColored,
 		isLevelColored: *option.isLevelColored,
+		filterLevel:    option.levelFilter,
 	}, nil
 }
 
@@ -105,6 +116,19 @@ func (h *customTextHandler) textWithLevel(str string, level slog.Level) string {
 		return colorFunc(str)
 	}
 	return str
+}
+
+func (h *customTextHandler) Enabled(c context.Context, level slog.Level) bool {
+	if !h.isShow {
+		return false
+	}
+
+	if len(h.filterLevel) > 0 {
+		_, ok := h.filterLevel[level]
+		return ok
+	}
+
+	return h.Handler.Enabled(c, level)
 }
 
 func (h *customTextHandler) Handle(_ context.Context, r slog.Record) error {

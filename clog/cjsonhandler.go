@@ -18,6 +18,8 @@ type customJsonHandler struct {
 	levelColorMap  map[slog.Level]colorFunc
 	isKeysColored  bool
 	isLevelColored bool
+	isShow         bool
+	filterLevel    map[slog.Level]bool
 }
 
 func NewCustomJsonHandler(w io.Writer, opts ...customHandlerOptionFunc) (*customJsonHandler, error) {
@@ -27,6 +29,8 @@ func NewCustomJsonHandler(w io.Writer, opts ...customHandlerOptionFunc) (*custom
 		levelColorMap:  defaultColorMap(),
 		isKeysColored:  nil,
 		isLevelColored: nil,
+		isShow:         nil,
+		levelFilter:    make(map[slog.Level]bool),
 	}
 
 	for _, opt := range opts {
@@ -38,6 +42,11 @@ func NewCustomJsonHandler(w io.Writer, opts ...customHandlerOptionFunc) (*custom
 
 	if option.handlerOption == nil {
 		option.handlerOption = &slog.HandlerOptions{}
+	}
+
+	if option.isShow == nil {
+		initialShow := true
+		option.isShow = &initialShow
 	}
 
 	if option.isKeysColored == nil {
@@ -54,8 +63,10 @@ func NewCustomJsonHandler(w io.Writer, opts ...customHandlerOptionFunc) (*custom
 		Handler:        slog.NewJSONHandler(w, option.handlerOption),
 		w:              w,
 		levelColorMap:  option.levelColorMap,
+		isShow:         *option.isShow,
 		isKeysColored:  *option.isKeysColored,
 		isLevelColored: *option.isLevelColored,
+		filterLevel:    option.levelFilter,
 	}, nil
 }
 
@@ -134,6 +145,19 @@ func (h *customJsonHandler) myJsonMarshalNest(fields map[string]any, nlevel int,
 	nestPrefixStr := strings.Repeat(prefix, nlevel*2)
 	ans += fmt.Sprintf("\n%v}", nestPrefixStr)
 	return ans, nil
+}
+
+func (h *customJsonHandler) Enabled(c context.Context, level slog.Level) bool {
+	if !h.isShow {
+		return false
+	}
+
+	if len(h.filterLevel) > 0 {
+		_, ok := h.filterLevel[level]
+		return ok
+	}
+
+	return h.Handler.Enabled(c, level)
 }
 
 func (h *customJsonHandler) Handle(_ context.Context, r slog.Record) error {

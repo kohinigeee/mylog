@@ -5,8 +5,10 @@ import "log/slog"
 type customHandlerOption struct {
 	handlerOption  *slog.HandlerOptions
 	levelColorMap  map[slog.Level]colorFunc
+	isShow         *bool
 	isKeysColored  *bool
 	isLevelColored *bool
+	levelFilter    map[slog.Level]bool
 }
 
 type customHandlerOptionFunc func(options *customHandlerOption) error
@@ -35,6 +37,20 @@ func WithKeyColored(isKeysColored bool) customHandlerOptionFunc {
 func WithLevelColored(isLevelColored bool) customHandlerOptionFunc {
 	return func(options *customHandlerOption) error {
 		options.isLevelColored = &isLevelColored
+		return nil
+	}
+}
+
+func WithShow(isShow bool) customHandlerOptionFunc {
+	return func(option *customHandlerOption) error {
+		option.isShow = &isShow
+		return nil
+	}
+}
+
+func WithAddFilter(level slog.Level) customHandlerOptionFunc {
+	return func(option *customHandlerOption) error {
+		option.levelFilter[level] = true
 		return nil
 	}
 }
