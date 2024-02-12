@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"sort"
 	"strings"
 
 	"github.com/fatih/color"
+	"github.com/kohinigeee/mylog/inner/customcoll"
 )
 
 type customTextHandler struct {
@@ -83,7 +85,12 @@ func (h *customTextHandler) filedsNameToColorText(name string, nestLevel int) st
 
 func (h *customTextHandler) filedsToText(fields map[string]any, prefixs []string) []string {
 	ans := make([]string, 0)
-	for key, value := range fields {
+
+	keys := customcoll.MapKeys[string](fields)
+	sort.Strings(keys)
+
+	for _, key := range keys {
+		value := fields[key]
 
 		if _, ok := value.(map[string]any); ok {
 			keyName := h.filedsNameToColorText(key, len(prefixs))

@@ -18,10 +18,9 @@ func main() {
 	var logLevel = new(slog.LevelVar)
 	logLevel.Set(slog.LevelDebug)
 
-	myh, err := clog.NewCustomJsonHandler(os.Stdout,
+	myh, err := clog.NewCustomTextHandler(os.Stdout,
 		clog.WithKeyColored(true),
 		clog.WithLevelColored(true),
-		clog.WithAddFilter(slog.LevelDebug),
 	)
 
 	if err != nil {
@@ -35,7 +34,7 @@ func main() {
 	myLogger.Debug("Hello World",
 		"upperCase", s,
 	)
-	myLogger.Info("Hello World", slog.String("key", "value"))
+	myLogger.Info("Hello World", slog.String("key1", "value"))
 	myLogger.Warn("Hello World")
 	myLogger.Error("Hello World", slog.String("key", "value"))
 }
