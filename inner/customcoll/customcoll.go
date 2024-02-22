@@ -10,13 +10,13 @@ func Filter[T any](slice []T, filterFunc func(T) bool) []T {
 	return result
 }
 
-func Contains[T comparable](slice []T, value T) bool {
-	for _, item := range slice {
+func Contains[T comparable](slice []T, value T) (bool, int) {
+	for i, item := range slice {
 		if item == value {
-			return true
+			return true, i
 		}
 	}
-	return false
+	return false, -1
 }
 
 func MapKeys[T comparable, U any](m map[T]U) []T {

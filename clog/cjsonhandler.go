@@ -105,7 +105,7 @@ func (h *customJsonHandler) myJsonMarshalNest(fields map[string]any, nlevel int,
 		targetKeys := []string{"time", "level", "msg"}
 
 		keys = customcoll.Filter[string](keys, func(key string) bool {
-			if customcoll.Contains(targetKeys, key) {
+			if ok, _ := customcoll.Contains(targetKeys, key); ok {
 				return false
 			}
 			return true

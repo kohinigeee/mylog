@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"runtime"
 	"sort"
 	"strings"
 
@@ -20,6 +21,7 @@ type customTextHandler struct {
 	isLevelColored bool
 	isShow         bool
 	filterLevel    map[slog.Level]bool
+	addSourceOpt   AddSourceOption
 }
 
 func NewCustomTextHandler(w io.Writer, opts ...customHandlerOptionFunc) (*customTextHandler, error) {
@@ -30,6 +32,10 @@ func NewCustomTextHandler(w io.Writer, opts ...customHandlerOptionFunc) (*custom
 		isLevelColored: nil,
 		isShow:         nil,
 		levelFilter:    make(map[slog.Level]bool),
+		addSourceOpt: AddSourceOption{
+			PrefixFoldaName: "",
+			AddSource:       false,
+		},
 	}
 
 	for _, opt := range opts {
@@ -66,6 +72,7 @@ func NewCustomTextHandler(w io.Writer, opts ...customHandlerOptionFunc) (*custom
 		isKeysColored:  *option.isKeysColored,
 		isLevelColored: *option.isLevelColored,
 		filterLevel:    option.levelFilter,
+		addSourceOpt:   option.addSourceOpt,
 	}, nil
 }
 
@@ -92,13 +99,15 @@ func (h *customTextHandler) filedsToText(fields map[string]any, prefixs []string
 	for _, key := range keys {
 		value := fields[key]
 
+		keyName := removeOrderString(key)
 		if _, ok := value.(map[string]any); ok {
-			keyName := h.filedsNameToColorText(key, len(prefixs))
+			keyName = h.filedsNameToColorText(keyName, len(prefixs))
 			prefixs = append(prefixs, keyName)
 
 			ans = append(ans, h.filedsToText(value.(map[string]any), prefixs)...)
+			prefixs = prefixs[:len(prefixs)-1]
 		} else {
-			keyName := h.filedsNameToColorText(key, len(prefixs))
+			keyName := h.filedsNameToColorText(keyName, len(prefixs))
 			prefixs = append(prefixs, keyName)
 			prefixName := strings.Join(prefixs, ".")
 
@@ -108,9 +117,7 @@ func (h *customTextHandler) filedsToText(fields map[string]any, prefixs []string
 			prefixs = prefixs[:len(prefixs)-1]
 		}
 	}
-	if len(prefixs) > 0 {
-		prefixs = prefixs[:len(prefixs)-1]
-	}
+
 	return ans
 }
 
@@ -139,6 +146,7 @@ func (h *customTextHandler) Enabled(c context.Context, level slog.Level) bool {
 }
 
 func (h *customTextHandler) Handle(_ context.Context, r slog.Record) error {
+
 	timeStr := r.Time.Format("2006-01-02 15:04:05")
 	levelStr := h.textWithLevel(r.Level.String(), r.Level)
 	msg := h.textWithLevel(r.Message, r.Level)
@@ -148,6 +156,15 @@ func (h *customTextHandler) Handle(_ context.Context, r slog.Record) error {
 		addFields(fieldsMap, a)
 		return true
 	})
+
+	if h.addSourceOpt.AddSource {
+		const skipLevel = 3
+		_, file, line, _ := runtime.Caller(skipLevel)
+		file = makeLogginSurcepath(file, h.addSourceOpt.PrefixFoldaName)
+		logStr := fmt.Sprintf("%v:%v", file, line)
+		keyName := OrderString("logCode", OrderLevel1())
+		addFields(fieldsMap, slog.String(keyName, logStr))
+	}
 
 	fieldsTexts := h.filedsToText(fieldsMap, []string{})
 

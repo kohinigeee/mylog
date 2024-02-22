@@ -2,6 +2,11 @@ package clog
 
 import "log/slog"
 
+type AddSourceOption struct {
+	PrefixFoldaName string
+	AddSource       bool
+}
+
 type customHandlerOption struct {
 	handlerOption  *slog.HandlerOptions
 	levelColorMap  map[slog.Level]colorFunc
@@ -9,6 +14,7 @@ type customHandlerOption struct {
 	isKeysColored  *bool
 	isLevelColored *bool
 	levelFilter    map[slog.Level]bool
+	addSourceOpt   AddSourceOption
 }
 
 type customHandlerOptionFunc func(options *customHandlerOption) error
@@ -51,6 +57,13 @@ func WithShow(isShow bool) customHandlerOptionFunc {
 func WithAddFilter(level slog.Level) customHandlerOptionFunc {
 	return func(option *customHandlerOption) error {
 		option.levelFilter[level] = true
+		return nil
+	}
+}
+
+func WithAddSourceOption(opt AddSourceOption) customHandlerOptionFunc {
+	return func(option *customHandlerOption) error {
+		option.addSourceOpt = opt
 		return nil
 	}
 }
