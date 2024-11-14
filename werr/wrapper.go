@@ -68,7 +68,7 @@ func (w *Wrapper) PrefixDir() string {
 	return string(w.prefixDir)
 }
 
-func (w *Wrapper) Errf(format string, args ...interface{}) werr {
+func (w *Wrapper) Errf(format string, args ...interface{}) Werr {
 	pc, fileStr, line, ok := runtime.Caller(1)
 
 	file := w.toInPath(fileStr)
@@ -83,7 +83,7 @@ func (w *Wrapper) Errf(format string, args ...interface{}) werr {
 	return newWerr(w.toOutPath(file), line, funcName, format, args...)
 }
 
-func (w *Wrapper) WrapErrf(err werr, format string, args ...interface{}) werr {
+func (w *Wrapper) WrapErrf(err Werr, format string, args ...interface{}) Werr {
 	pc, fileStr, line, ok := runtime.Caller(1)
 
 	file := w.toInPath(fileStr)
