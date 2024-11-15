@@ -12,13 +12,13 @@ var (
 )
 
 func testFunc() {
-	err := w.Errf("test error")
+	err := w.Errf(0, "test error")
 	fmt.Printf("%v\n", err)
 
-	err2 := w.WrapErrf(err, "wrap error")
+	err2 := w.WrapErrf(0, err, "wrap error")
 	fmt.Printf("%v\n", err2)
 
-	err3 := w.WrapErrf(err2, "wrap error2")
+	err3 := w.WrapErrf(0, err2, "wrap error2")
 	fmt.Printf("%v\n", err3)
 }
 

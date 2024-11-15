@@ -68,8 +68,10 @@ func (w *Wrapper) PrefixDir() string {
 	return string(w.prefixDir)
 }
 
-func (w *Wrapper) Errf(format string, args ...interface{}) Werr {
-	pc, fileStr, line, ok := runtime.Caller(1)
+// trace : 0 is current function, 1 is caller function
+func (w *Wrapper) Errf(trace int, format string, args ...interface{}) Werr {
+	const pcDepth = 1
+	pc, fileStr, line, ok := runtime.Caller(trace + pcDepth)
 
 	file := w.toInPath(fileStr)
 	if !ok {
@@ -83,8 +85,10 @@ func (w *Wrapper) Errf(format string, args ...interface{}) Werr {
 	return newWerr(w.toOutPath(file), line, funcName, format, args...)
 }
 
-func (w *Wrapper) WrapErrf(err error, format string, args ...interface{}) Werr {
-	pc, fileStr, line, ok := runtime.Caller(1)
+// trace : 0 is current function, 1 is caller function
+func (w *Wrapper) WrapErrf(trace int, err error, format string, args ...interface{}) Werr {
+	const pcDepth = 1
+	pc, fileStr, line, ok := runtime.Caller(trace + pcDepth)
 
 	file := w.toInPath(fileStr)
 	if !ok {
