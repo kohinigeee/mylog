@@ -29,19 +29,35 @@ func newWerr(file string, line int, funcName string, fmtstr string, args ...inte
 	}
 }
 
-func newWerrByWrap(file string, line int, funcName string, originErr Werr, fmtstr string, args ...interface{}) Werr {
+func newWerrByWrap(file string, line int, funcName string, originErr error, fmtstr string, args ...interface{}) Werr {
 	msg := fmt.Sprintf(fmtstr, args...)
-	depth := originErr.depth + 1
 
-	err := fmt.Errorf("{ msg[%d] %s | run[%d] %s %s(L%d) | trace[%d]-> %w }", depth, msg, depth, file, funcName, line, depth, originErr.err)
+	switch originWerr := originErr.(type) {
+	case Werr:
+		depth := originWerr.depth + 1
 
-	return Werr{
-		file:     file,
-		line:     line,
-		funcName: funcName,
-		msg:      msg,
-		err:      err,
-		depth:    depth,
+		err := fmt.Errorf("{ msg[%d] %s | run[%d] %s %s(L%d) | trace[%d]-> %w }", depth, msg, depth, file, funcName, line, depth, originWerr.err)
+
+		return Werr{
+			file:     file,
+			line:     line,
+			funcName: funcName,
+			msg:      msg,
+			err:      err,
+			depth:    depth,
+		}
+	default:
+		depth := 0
+		err := fmt.Errorf("{ msg[%d] %s | run[%d] %s %s(L%d) }", depth, msg, depth, file, funcName, line)
+
+		return Werr{
+			file:     file,
+			line:     line,
+			funcName: funcName,
+			msg:      msg,
+			err:      err,
+			depth:    depth,
+		}
 	}
 }
 

@@ -83,7 +83,7 @@ func (w *Wrapper) Errf(format string, args ...interface{}) Werr {
 	return newWerr(w.toOutPath(file), line, funcName, format, args...)
 }
 
-func (w *Wrapper) WrapErrf(err Werr, format string, args ...interface{}) Werr {
+func (w *Wrapper) WrapErrf(err error, format string, args ...interface{}) Werr {
 	pc, fileStr, line, ok := runtime.Caller(1)
 
 	file := w.toInPath(fileStr)
