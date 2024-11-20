@@ -5,6 +5,7 @@ import "log/slog"
 type AddSourceOption struct {
 	PrefixFoldaName string
 	AddSource       bool
+	CallerDepth     int // 0: runtime.Caller, 1: runtime.Caller's caller
 }
 
 type customHandlerOption struct {

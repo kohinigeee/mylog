@@ -159,10 +159,10 @@ func (h *customTextHandler) Handle(_ context.Context, r slog.Record) error {
 
 	if h.addSourceOpt.AddSource {
 		const skipLevel = 3
-		_, file, line, _ := runtime.Caller(skipLevel)
+		_, file, line, _ := runtime.Caller(skipLevel + h.addSourceOpt.CallerDepth)
 		file = makeLogginSurcepath(file, h.addSourceOpt.PrefixFoldaName)
 		logStr := fmt.Sprintf("%v:%v", file, line)
-		keyName := OrderString("logCode", OrderLevel1())
+		keyName := OrderString("log-run", OrderLevel1())
 		addFields(fieldsMap, slog.String(keyName, logStr))
 	}
 

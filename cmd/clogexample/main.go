@@ -23,8 +23,10 @@ func main() {
 			Level: logLevel,
 		}),
 		clog.WithAddSourceOption(clog.AddSourceOption{
-			PrefixFoldaName: "clog",
-			AddSource:       true}),
+			PrefixFoldaName: "mylog",
+			AddSource:       true,
+			CallerDepth:     0,
+		}),
 	)
 
 	if err != nil {

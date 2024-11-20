@@ -132,7 +132,7 @@ func makeLogginSurcepath(fpath string, prefixFoldaName string) string {
 	dirs = dirs[prefixIdx:]
 	logPath := filepath.Join(dirs...)
 
-	return prefix + logPath
+	return filepath.ToSlash(prefix + logPath)
 }
 
 type clogOrderLevelT struct {
