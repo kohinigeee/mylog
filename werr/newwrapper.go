@@ -9,8 +9,9 @@ type werrNewOptionalFunc func(w *Wrapper) error
 
 func NewWrapper(options ...werrNewOptionalFunc) *Wrapper {
 	w := &Wrapper{
-		prefixDir:     "",
-		pathSeparater: Slash,
+		prefixDir:        "",
+		prefixModuleName: "",
+		pathSeparater:    Slash,
 	}
 
 	for _, opt := range options {
@@ -38,6 +39,13 @@ func WithPathSeparater(pathSeparater pathSeparaterType) werrNewOptionalFunc {
 	return func(w *Wrapper) error {
 		w.pathSeparater = pathSeparater
 		w.prefixDir = w.toInPath(string(w.prefixDir))
+		return nil
+	}
+}
+
+func WithPrefixModuleName(prefixModuleName string) werrNewOptionalFunc {
+	return func(w *Wrapper) error {
+		w.prefixModuleName = prefixModuleName
 		return nil
 	}
 }

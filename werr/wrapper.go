@@ -43,8 +43,9 @@ func toPath(path string, sep pathSeparaterType) string {
 type slashPathT string
 
 type Wrapper struct {
-	prefixDir     slashPathT
-	pathSeparater pathSeparaterType
+	prefixDir        slashPathT
+	prefixModuleName string
+	pathSeparater    pathSeparaterType
 }
 
 func (w *Wrapper) toOutPath(path slashPathT) string {
@@ -55,13 +56,26 @@ func (w *Wrapper) toInPath(path string) slashPathT {
 	return slashPathT(toPath(path, Slash))
 }
 
-func (w *Wrapper) toRel(file slashPathT) slashPathT {
+func (w *Wrapper) toRelFile(file slashPathT) slashPathT {
 	if !strings.HasPrefix(string(file), string(w.prefixDir)) {
 		return file
 	}
 
 	fstr := strings.TrimPrefix(string(file), string(w.prefixDir))
 	return slashPathT("." + Slash.String() + fstr)
+}
+
+func (w *Wrapper) toRelPackage(fname string) string {
+	if w.prefixModuleName == "" {
+		return fname
+	}
+
+	if !strings.HasPrefix(fname, w.prefixModuleName) {
+		return fname
+	}
+
+	fstr := strings.TrimPrefix(fname, w.prefixModuleName)
+	return "." + Slash.String() + fstr
 }
 
 func (w *Wrapper) PrefixDir() string {
@@ -80,7 +94,8 @@ func (w *Wrapper) Errf(trace int, format string, args ...interface{}) Werr {
 	}
 
 	funcName := runtime.FuncForPC(pc).Name()
-	file = w.toRel(file)
+	file = w.toRelFile(file)
+	funcName = w.toRelPackage(funcName)
 
 	return newWerr(w.toOutPath(file), line, funcName, format, args...)
 }
@@ -97,7 +112,8 @@ func (w *Wrapper) WrapErrf(trace int, err error, format string, args ...interfac
 	}
 
 	funcName := runtime.FuncForPC(pc).Name()
-	file = w.toRel(file)
+	file = w.toRelFile(file)
+	funcName = w.toRelPackage(funcName)
 
 	return newWerrByWrap(w.toOutPath(file), line, funcName, err, format, args...)
 }

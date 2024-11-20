@@ -25,7 +25,10 @@ func testFunc() {
 func main() {
 	cwd, _ := os.Getwd()
 	fmt.Printf("cwd: %s\n", cwd)
-	w = werr.NewWrapper(werr.WithPrefixDir(cwd))
+	w = werr.NewWrapper(
+		werr.WithPrefixDir(cwd),
+		werr.WithPrefixModuleName("main"),
+	)
 
 	testFunc()
 }
